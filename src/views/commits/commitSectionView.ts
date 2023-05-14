@@ -6,6 +6,8 @@ import GitTextUtils from '../../utils/gitTextUtils';
 import { SemanticTextView, Token } from '../general/semanticTextView';
 import { SemanticTokenTypes } from '../../common/constants';
 import ViewUtils from '../../utils/viewUtils';
+import { MagitCommitSummary } from '../../models/magitCommit';
+import { ar } from 'date-fns/locale';
 
 export class CommitSectionView extends View {
   isFoldable = true;
@@ -16,20 +18,22 @@ export class CommitSectionView extends View {
     super();
     this.subViews = [
       new SectionHeaderView(section),
-      ...commits.map(commit => new CommitItemView(commit, undefined, refs)),
+      ...commits.map(commit => new CommitItemView(MagitCommitSummary.fromCommit(commit), undefined, refs)),
       new LineBreakView()
     ];
   }
 }
 
+// View for a one-line representation of a commit. If refs is provided, we check
+// if the commit matches any of them and display that ref name next to it.
 export class CommitItemView extends SemanticTextView {
 
-  constructor(public commit: Commit, qualifier?: string, refs?: Ref[]) {
+  constructor(public commit: MagitCommitSummary, qualifier?: string, refs?: Ref[]) {
     super();
 
     this.content = [
       `${qualifier !== undefined ? qualifier + ' ' : ''}${GitTextUtils.shortHash(commit.hash)} `,
       ...ViewUtils.generateRefTokensLine(commit.hash, refs),
-      `${GitTextUtils.shortCommitMessage(commit.message)}`];
+      `${commit.subject}`];
   }
 }

@@ -21,6 +21,7 @@ import { PullRequestView } from '../views/forge/pullRequestView';
 import { sep } from 'path';
 import { ErrorMessageView } from '../views/errorMessageView';
 import { processView } from './processCommands';
+import { MagitCommitSummary } from '../models/magitCommit';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
 
@@ -54,7 +55,7 @@ export async function magitVisitAtPoint(repository: MagitRepository, currentView
 
   } else if (selectedView instanceof CommitItemView) {
 
-    const commit: MagitCommit = (selectedView as CommitItemView).commit;
+    const commit: MagitCommitSummary = (selectedView as CommitItemView).commit;
     return visitCommit(repository, commit.hash);
 
   } else if (selectedView instanceof BranchListingView ||

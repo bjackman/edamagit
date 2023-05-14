@@ -1,4 +1,5 @@
 import { Branch, Commit, UpstreamRef, Ref } from '../typings/git';
+import { MagitCommitSummary } from '../models/magitCommit';
 
 export interface MagitBranch extends Branch {
   commitDetails: Commit;
@@ -9,7 +10,7 @@ export interface MagitBranch extends Branch {
 
 export interface MagitUpstreamRef extends UpstreamRef {
   commit?: Commit;
-  commitsAhead?: Commit[];
-  commitsBehind?: Commit[];
+  commitsAhead?: MagitCommitSummary[];
+  commitsBehind?: MagitCommitSummary[];
   rebase?: boolean;
 }
