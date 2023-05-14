@@ -4,6 +4,7 @@ import { MagitCherryPickingState } from '../../models/magitCherryPickingState';
 import { SectionHeaderView, Section } from '../general/sectionHeader';
 import { Commit } from '../../typings/git';
 import { CommitItemView } from '../commits/commitSectionView';
+import { MagitCommitSummary } from '../../models/magitCommit';
 
 export class CherryPickingSectionView extends View {
   isFoldable = true;
@@ -24,10 +25,10 @@ export class CherryPickingSectionView extends View {
 
     this.subViews = [
       new SectionHeaderView(Section.CherryPicking),
-      ...cherryPickingState.upcomingCommits.map(commit => new CommitItemView(commit, 'pick')),
-      new CommitItemView(cherryPickingState.currentCommit, 'join'),
-      ...doneCommits.map(commit => new CommitItemView(commit, 'done')),
-      new CommitItemView(cherryPickingState.originalHead, 'onto'),
+      ...cherryPickingState.upcomingCommits.map(commit => new CommitItemView(MagitCommitSummary.fromCommit(commit), 'pick')),
+      new CommitItemView(MagitCommitSummary.fromCommit(cherryPickingState.currentCommit), 'join'),
+      ...doneCommits.map(commit => new CommitItemView(MagitCommitSummary.fromCommit(commit), 'done')),
+      new CommitItemView(MagitCommitSummary.fromCommit(cherryPickingState.originalHead), 'onto'),
       new LineBreakView()
     ];
   }
