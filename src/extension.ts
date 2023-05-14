@@ -42,6 +42,8 @@ import { copyBufferRevisionCommands } from './commands/copyBufferRevisionCommand
 import { submodules } from './commands/submodulesCommands';
 import { forgeRefreshInterval } from './forge';
 
+import fs = require('fs');
+
 export const magitRepositories: Map<string, MagitRepository> = new Map<string, MagitRepository>();
 export const views: Map<string, DocumentView> = new Map<string, DocumentView>();
 export const processLog: MagitProcessLogEntry[] = [];
@@ -49,6 +51,14 @@ export const processLog: MagitProcessLogEntry[] = [];
 export let gitApi: API;
 export let logPath: string;
 export let magitConfig: { displayBufferSameColumn?: boolean, forgeEnabled?: boolean, hiddenStatusSections: Set<string>, quickSwitchEnabled?: boolean, winGitPath?: string };
+
+export function trace(m: string) {
+  let now = new Date();
+  let millis = now.getMilliseconds().toString().padStart(3, '0');
+  let ts = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${millis}`;
+  fs.appendFile('/tmp/magit_trace.txt', `${ts}: ${m}\n`, () => {});
+}
+
 
 function loadConfig() {
   let workspaceConfig = workspace.getConfiguration('magit');

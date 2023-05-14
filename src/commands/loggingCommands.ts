@@ -8,6 +8,7 @@ import { gitRun, LogLevel } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import ViewUtils from '../utils/viewUtils';
 import LogView from '../views/logView';
+import { trace } from '../extension';
 
 const loggingMenu = {
   title: 'Logging',
@@ -32,7 +33,10 @@ const options: Option[] = [
 ];
 
 export async function logging(repository: MagitRepository) {
-  return MenuUtil.showMenu(loggingMenu, { repository, switches, options });
+  trace('logging');
+  const ret = MenuUtil.showMenu(loggingMenu, { repository, switches, options });
+  trace('logging: menu util done');
+  return ret;
 }
 
 // A function wrapper to avoid duplicate checking code

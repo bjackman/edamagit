@@ -1,6 +1,6 @@
 import { MagitChange } from '../models/magitChange';
 import { workspace, window, Uri } from 'vscode';
-import { magitRepositories, views } from '../extension';
+import { trace, magitRepositories, views } from '../extension';
 import FilePathUtils from '../utils/filePathUtils';
 import GitTextUtils from '../utils/gitTextUtils';
 import MagitUtils from '../utils/magitUtils';
@@ -20,11 +20,14 @@ import { MagitRepository } from '../models/magitRepository';
 import ViewUtils from '../utils/viewUtils';
 import { scheduleForgeStatusAsync, forgeStatusCached } from '../forge';
 
+
 export async function magitRefresh() { }
 
 export async function magitStatus(): Promise<any> {
 
   const editor = window.activeTextEditor;
+
+  trace('magitStatus:begin');
 
   let repository = MagitUtils.getCurrentMagitRepoNO_STATUS(editor?.document.uri);
 
@@ -33,12 +36,14 @@ export async function magitStatus(): Promise<any> {
   //        2. window->showTextDocument of the current view resulting in duplication of the view
 
   if (repository) {
+    trace('magitStatus:got repo');
 
     const uri = MagitStatusView.encodeLocation(repository);
 
     // Checks for existing Magit status view
     let view = views.get(uri.toString());
     if (view) {
+      trace('magitStatus:reusing view');
       await MagitUtils.magitStatusAndUpdate(repository);
       if (editor?.document.uri.path === MagitStatusView.UriPath) {
         return;
@@ -50,8 +55,10 @@ export async function magitStatus(): Promise<any> {
     magitRepositories.set(repository.uri.fsPath, repository);
 
   } else {
-    // TODO: Maybe call new func MagitUtils.discoverRepo_Status instead to avoid double tapping "getCurrentMagitRepoNO_STATUS"
+    // TODO: Maybe call new func MagitUtils.discoverRepo_Status instead to avoid double tapping 'getCurrentMagitRepoNO_STATUS'
+    trace('magitStatus:getCurrentMagitRepo case');
     repository = await MagitUtils.getCurrentMagitRepo(editor?.document.uri);
+    trace('magitStatus:getCurrentMagitRepo returned');
   }
 
   if (repository) {
@@ -63,7 +70,9 @@ export async function magitStatus(): Promise<any> {
 
 export async function internalMagitStatus(repository: Repository): Promise<MagitRepository> {
 
+  trace('internalMagitStatus:begin');
   await repository.status();
+  trace('internalMagitStatus:repository.status ready');
 
   const dotGitPath = repository.rootUri + '/.git/';
 
@@ -170,7 +179,8 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
 
   const forgeState = forgeStatusCached(remotes);
 
-  return {
+  trace('internalMagitStatus:about to do final await');
+  let ret = {
     uri: repository.rootUri,
     HEAD,
     stashes: await stashTask,
@@ -191,6 +201,8 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     gitRepository: repository,
     forgeState: forgeState,
   };
+  trace('internalMagitStatus:done final await');
+  return ret;
 }
 
 function toMagitChange(repository: Repository, change: Change, diff?: string): MagitChange {

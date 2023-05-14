@@ -1,6 +1,7 @@
 import { window, QuickPickItem, QuickPick } from 'vscode';
 import { magitConfig } from '../extension';
 import { MagitRepository } from '../models/magitRepository';
+import { trace } from '../extension';
 
 export interface Menu {
   title: string;
@@ -67,7 +68,10 @@ export class MenuUtil {
       });
     }
 
-    return MenuUtil.runMenu({ ...menu, commands: menuItems }, menuState);
+    trace('showManu: about to runMenu');
+    const ret = MenuUtil.runMenu({ ...menu, commands: menuItems }, menuState);
+    trace('showMenu: runMenu done');
+    return ret;
   }
 
   static switchesToArgs(switches?: Switch[]): string[] {
