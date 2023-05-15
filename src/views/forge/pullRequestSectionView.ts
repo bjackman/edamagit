@@ -4,7 +4,6 @@ import { LineBreakView } from '../general/lineBreakView';
 import { PullRequest } from '../../forge/model/pullRequest';
 import { TextView, UnclickableTextView } from '../general/textView';
 import { CommitItemView } from '../commits/commitSectionView';
-import { MagitCommitSummary } from '../../models/magitCommit';
 
 export class PullRequestSectionView extends View {
   isFoldable = true;
@@ -41,7 +40,7 @@ export class PullRequestItemView extends View {
 
     this.addSubview(
       new UnclickableTextView(`${PullRequestItemView.getSection(pullRequest)} ${pullRequest.title}${labels.length ? ' ' + labels : ''}`),
-      ...pullRequest.commits.map(c => new CommitItemView(MagitCommitSummary.fromCommit(c)))
+      ...pullRequest.commits.map(c => new CommitItemView(c))
     );
   }
 }

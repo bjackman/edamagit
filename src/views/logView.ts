@@ -10,7 +10,6 @@ import { DocumentView } from './general/documentView';
 import { TextView } from './general/textView';
 import { Token } from './general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
-import { MagitCommitSummary } from '../models/magitCommit';
 
 export default class LogView extends DocumentView {
 
@@ -36,7 +35,7 @@ export default class LogView extends DocumentView {
 export class CommitLongFormItemView extends CommitItemView {
 
   constructor(public logEntry: MagitLogEntry) {
-    super(MagitCommitSummary.fromCommit(logEntry.commit));
+    super(logEntry.commit);
 
     const timeDistance = formatDistanceToNowStrict(logEntry.time);
     const hash = `${GitTextUtils.shortHash(logEntry.commit.hash)} `;

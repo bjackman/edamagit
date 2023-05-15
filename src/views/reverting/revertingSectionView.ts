@@ -5,7 +5,6 @@ import { SectionHeaderView, Section } from '../general/sectionHeader';
 import { Commit } from '../../typings/git';
 import { CommitItemView } from '../commits/commitSectionView';
 import { MagitRevertingState } from '../../models/magitRevertingState';
-import { MagitCommitSummary } from '../../models/magitCommit';
 
 export class RevertingSectionView extends View {
   isFoldable = true;
@@ -26,10 +25,10 @@ export class RevertingSectionView extends View {
 
     this.subViews = [
       new SectionHeaderView(Section.Reverting),
-      ...revertingState.upcomingCommits.map(commit => new CommitItemView(MagitCommitSummary.fromCommit(commit), 'revert')),
-      new CommitItemView(MagitCommitSummary.fromCommit(revertingState.currentCommit), 'join'),
-      ...doneCommits.map(commit => new CommitItemView(MagitCommitSummary.fromCommit(commit), 'done')),
-      new CommitItemView(MagitCommitSummary.fromCommit(revertingState.originalHead), 'onto'),
+      ...revertingState.upcomingCommits.map(commit => new CommitItemView(commit, 'revert')),
+      new CommitItemView(revertingState.currentCommit, 'join'),
+      ...doneCommits.map(commit => new CommitItemView(commit, 'done')),
+      new CommitItemView(revertingState.originalHead, 'onto'),
       new LineBreakView()
     ];
   }

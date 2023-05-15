@@ -1,9 +1,8 @@
 import { View } from '../general/view';
 import { Section, SectionHeaderView } from '../general/sectionHeader';
-import { UpstreamRef, Ref } from '../../typings/git';
+import { Commit, UpstreamRef, Ref } from '../../typings/git';
 import { LineBreakView } from '../general/lineBreakView';
 import { CommitItemView } from './commitSectionView';
-import { MagitCommitSummary } from '../../models/magitCommit';
 
 export class UnsourcedCommitSectionView extends View {
   isFoldable = true;
@@ -12,7 +11,7 @@ export class UnsourcedCommitSectionView extends View {
 
   get id() { return this.section.toString(); }
 
-  constructor(private section: Section, upstream: UpstreamRef, commits: MagitCommitSummary[], refs: Ref[]) {
+  constructor(private section: Section, upstream: UpstreamRef, commits: Commit[], refs: Ref[]) {
     super();
     let truncated = false;
     if (commits.length > UnsourcedCommitSectionView.maxEntries) {
