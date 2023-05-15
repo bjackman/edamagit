@@ -11,7 +11,6 @@ import { gitRun, LogLevel } from '../utils/gitRawRunner';
 import * as Constants from '../common/constants';
 import { getCommit } from '../utils/commitCache';
 import { MagitRemote } from '../models/magitRemote';
-import { MagitCommitSummary } from '../models/magitCommit';
 import { MagitRebasingState } from '../models/magitRebasingState';
 import { MagitMergingState } from '../models/magitMergingState';
 import { MagitRevertingState } from '../models/magitRevertingState';
@@ -202,28 +201,41 @@ function toMagitChange(repository: Repository, change: Change, diff?: string): M
 }
 
 type AheadBehind = { 
-  ahead: MagitCommitSummary[], 
-  behind: MagitCommitSummary[] 
+  ahead: Commit[], 
+  behind: Commit[] 
 }; 
 
 async function getCommitsAheadBehind(repository: Repository, ref: string, upstream: string): Promise<AheadBehind> {
-  // %m: > or < like in --left-right.
-  // %s: Subject.
-  // %x00: NUL character, a convenient delimiter as it can't be in the subject.
-  const args = ['log', '--format=format:%m%x00%H%x00%s',  `${ref}...${upstream}`];
-  const ahead: MagitCommitSummary[] = [], behind: MagitCommitSummary[] = [];
+  const fields = [
+    '%m',  // < or > , tells you whether the commit is in `upstream` or `ref`.
+    '%H',  // Commit hash.
+    '%B',  // Raw commit message.
+    '%P',  // Parent hashes. Docs don't say this, but they're delimited by spaces.
+    '%ae', // Author email.
+  ];
+  // Separate fields by '\x00\x01', and commits by '\x00\x00' (git will also add
+  // a newline to the latter) - this gives us two distinct delimiters neither of
+  // which can appear inside any of the fields.
+  const format = fields.join('%x00%x01') + '%x00%x00';
+  const args = ['log', `--format=format:${format}`,  `${ref}...${upstream}`];
+  const ahead: Commit[] = [], behind: Commit[] = [];
   let result;
   try {
-    result = await gitRun(repository, args, {});
+    result = await gitRun(repository, args, {}, LogLevel.Error);
   } catch (error) {
     return {ahead: [], behind: []};
   }
   result.stdout
-    .split(Constants.LineSplitterRegex)
-    .slice(0, -1) // Remove empty string after final newline
+    .split('\x00\x00\n')
+    .slice(0, -1) // Remove empty string after final commit delimiter
     .forEach(line => {
-      const [leftRight, hash, subject] = line.split('\0');
-      const commit = new MagitCommitSummary(hash, subject);
+      const [leftRight, hash, message, parentsStr, authorEmail] = line.split('\x00\x01');
+      const commit = {
+        hash: hash,
+        message: message,
+        parents: parentsStr ? parentsStr.split(' ') : [],
+        authorEmail: authorEmail,
+      };
       switch (leftRight) {
         case '<':
           ahead.push(commit);
