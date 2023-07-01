@@ -230,8 +230,8 @@ async function pushRemoteStatus(repository: Repository): Promise<MagitUpstreamRe
 
     if (HEAD?.name && pushRemote) {
 
-      const behind = getCommitRange(repository, `${pushRemote}/${HEAD.name}`, HEAD.name, maxCommitsAheadBehind);
-      const ahead = getCommitRange(repository, HEAD.name, `${pushRemote}/${HEAD.name}`, maxCommitsAheadBehind);
+      const ahead = getCommitRange(repository, `${pushRemote}/${HEAD.name}`, HEAD.name, maxCommitsAheadBehind);
+      const behind = getCommitRange(repository, HEAD.name, `${pushRemote}/${HEAD.name}`, maxCommitsAheadBehind);
 
       const refs = await getRefs(repository);
       const pushRemoteCommit = refs.find(ref => ref.remote === pushRemote && ref.name === `${pushRemote}/${HEAD.name}`)?.commit;
