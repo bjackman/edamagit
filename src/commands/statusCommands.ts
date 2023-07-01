@@ -217,6 +217,10 @@ async function getCommitRange(repository: Repository, from: string, to: string, 
   }
   const out = result.stdout.trim();
   const hashes = out ? out.split(Constants.LineSplitterRegex) : [];
+  return getCommitList(repository, hashes, maxResults);
+}
+
+async function getCommitList(repository: Repository, hashes: string[], maxResults: number): Promise<MagitCommitList> {
   return {
     commits: await Promise.all(hashes.slice(0, maxResults).map(hash => getCommit(repository, hash))),
     truncated: hashes.length > maxResults,
@@ -230,19 +234,21 @@ async function pushRemoteStatus(repository: Repository): Promise<MagitUpstreamRe
 
     if (HEAD?.name && pushRemote) {
 
-      const ahead = getCommitRange(repository, `${pushRemote}/${HEAD.name}`, HEAD.name, maxCommitsAheadBehind);
-      const behind = getCommitRange(repository, HEAD.name, `${pushRemote}/${HEAD.name}`, maxCommitsAheadBehind);
+      const args = ['rev-list', '--left-right', `${HEAD.name}...${pushRemote}/${HEAD.name}`];
+      const aheadBehind = gitRun(repository, args, {}, LogLevel.None)
+        .then(res => GitTextUtils.parseRevListLeftRight(res.stdout));
 
       const refs = await getRefs(repository);
       const pushRemoteCommit = refs.find(ref => ref.remote === pushRemote && ref.name === `${pushRemote}/${HEAD.name}`)?.commit;
       const pushRemoteCommitDetails = pushRemoteCommit ? getCommit(repository, pushRemoteCommit) : Promise.resolve(undefined);
 
+      const [aheadHashes, behindHashes] = await aheadBehind;
       return {
         remote: pushRemote,
         name: HEAD.name,
         commit: await pushRemoteCommitDetails,
-        ahead: await ahead,
-        behind: await behind,
+        ahead: await getCommitList(repository, aheadHashes, maxCommitsAheadBehind),
+        behind: await getCommitList(repository, behindHashes, maxCommitsAheadBehind),
       };
     }
   } catch { }
